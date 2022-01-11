@@ -19,20 +19,53 @@
      
            //var dataOrders =  backEndCall(); //! DATA DE PRODUCCION (DESCOMENTAR CUANDO SE REGULARIZE LA API)
            var dataOrders = Utility.readResourceFile("smp/chile/simuladores/QueryOrdersDetail.json"); //! DATA DE PRUEBAS (COMENTAR CUANDO SE REGULARIZE LA API).
-           log.info(LOG_HEADER + "Objeto JSON de la funcion processData(): " + dataOrders);
            
-           completMap = Utility.fnJsonToMap(dataOrders);
-           log.info(LOG_HEADER + "Mapa completo fnJsonToMap de la funcion processData(): " + completMap);
-     
-           if (completMap.size() !== 0) {
-              resultMap =  getMapOrdersDetails();
+           if (Object.keys(dataOrders).length === 0) {
+               
+                log.info(LOG_HEADER + "Objeto JSON de la funcion processData(): " + dataOrders);
+           
+                completMap = Utility.fnJsonToMap(dataOrders);
+                log.info(LOG_HEADER + "Mapa completo fnJsonToMap de la funcion processData(): " + completMap);
+            
+                if (completMap.size() !== 0) {
+
+                    resultMap =  getMapOrdersDetails();
+                } else {
+
+                    log.error(LOG_HEADER + "Result convert Json to Map is NULL");
+                    resultMap.put("resultCode",-1);
+                    resultMap.put("resultMessage","Response convert Json to Map is NULL");
+                }
+               
            } else {
-              resultMap.put( "Data", null);
+
+                log.error(LOG_HEADER + "Response is NULL");
+                returnMap.put("resultCode",-1);
+                resultMap.put("resultMessage","Response service is NULL");               
            }
+           
      
          }catch(e) {
-             //console.log(LOG_HEADER + "Error de excepcion en la funcion processData(): " + e);
-             resultMap.put("error", "Error de excepcion en la funcion processData(): "+e);
+             
+             log.error(LOG_HEADER + "Error de excepcion en la funcion processData(): "+e)
+             var error = new java.lang.String(e.message);
+             
+             if(error.contains("HTTP response=[Not Found] code=[404]") || error.contains("WSDLException: faultCode=OTHER_ERROR")){
+                 
+                 resultMap.put("resultCode","99");
+             } else if(error.contains("HTTP response=[Internal Server Error] code=[500]")){
+                 
+                 resultMap.put("resultCode","99");
+             } else if(error.contains("SocketTimeoutException")){
+                
+                 log.warn("Request timeout")
+                 resultMap.put("resultCode","-2");
+             }else{
+                 
+                 resultMap.put("resultCode","99");
+             }
+     
+             resultMap.put("resultMessage", e)
          }
          
          //console.log(str.get("Items")[1].get("servicios").get("ServiciosProductoEquipment")[0].get("containedServices"));

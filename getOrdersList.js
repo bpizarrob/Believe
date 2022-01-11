@@ -17,20 +17,52 @@ function processData(){
     	
         //var dataOrders =  backEndCall();
         var dataOrders = Utility.readResourceFile("smp/chile/simuladores/Queryorderlist.json");
- 	    log.info(LOG_HEADER + "Objeto completo de la funcion processData(): " + dataOrders +"]");
-        
-        completMap = Utility.fnJsonToMap(dataOrders);
-        log.info(LOG_HEADER + "Mapa completo fnJsonToMap de la funcion processData(): " + completMap);
+ 	    
+        if (Object.keys(dataOrders).length === 0) {
 
-        if (completMap.size() != 0) {
-           resultMap =  getMapOrdersList();
-        } else {
-           resultMap.put( "Data", null);
+            log.info(LOG_HEADER + "Objeto completo de la funcion processData(): " + dataOrders +"]");
+        
+            completMap = Utility.fnJsonToMap(dataOrders);
+            log.info(LOG_HEADER + "Mapa completo fnJsonToMap de la funcion processData(): " + completMap);
+
+            if (completMap.size() != 0) {
+
+                resultMap =  getMapOrdersList();
+
+            } else {
+
+                log.error(LOG_HEADER + "Result convert Json to Map is NULL");
+                resultMap.put("resultCode",-1);
+                resultMap.put("resultMessage","Response convert Json to Map is NULL");
+            }
+        }else{
+
+            log.error(LOG_HEADER + "Response is NULL");
+            resultMap.put("resultCode",-1);
+            resultMap.put("resultMessage","Response is NULL");
         }
         
     } catch(e) {
-        //log.error(LOG_HEADER + "Error de excepcion en la funcion processData(): " + e);
-        resultMap.put("error", LOG_HEADER + "Error de excepcion en la funcion processData(): "+e);
+
+        log.error(LOG_HEADER + "Error de excepcion en la funcion processData(): "+e)
+	    var error = new java.lang.String(e.message);
+        
+        if(error.contains("HTTP response=[Not Found] code=[404]") || error.contains("WSDLException: faultCode=OTHER_ERROR")){
+            
+            resultMap.put("resultCode","99");
+        } else if(error.contains("HTTP response=[Internal Server Error] code=[500]")){
+            
+            resultMap.put("resultCode","99");
+        } else if(error.contains("SocketTimeoutException")){
+           
+            log.warn("Request timeout")
+            resultMap.put("resultCode","-2");
+        }else{
+            
+            resultMap.put("resultCode","99");
+        }
+
+        resultMap.put("resultMessage", e)
     }
     
     log.info(LOG_HEADER + "Mapa procesado en la funcion processData(): " + resultMap);
@@ -70,10 +102,11 @@ function getMapOrdersList(){
                 }
             }
 
-            resultMapOrdersList.put("orders", arrayOrders);
+            resultMapOrdersList.put("petitionDetails", arrayOrders);
+            listOfPetitions
 
         } else {
-            resultMapOrdersList.put("orders", null);
+            resultMapOrdersList.put("petitionDetails", null);
         }
 
     }catch(e){
@@ -132,4 +165,5 @@ headers.put("Authorization", "Bearer "+ tokenAxway);
 headers.put("AuthorizationMCSS", tokenAmdocs);
 
 var salida = processData();
+
 return salida;
