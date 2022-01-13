@@ -1,7 +1,7 @@
 var LOG_HEADER = "VPI.getAllPetitions -> ";
 log.info(LOG_HEADER + "START");
 
-var subscriberId = "0001000001006";  //! COMENTAR EN DESARROLLO
+//var subscriberId = "0001000001006";  //! COMENTAR EN DESARROLLO
 var area = subscriberId.substring(0,3); // 000120000012203
 
 var result = new java.util.HashMap();
@@ -23,14 +23,15 @@ function callOrdersAmdocs(){
 
     area = subscriberId.substring(0, 3);
     log.info(LOG_HEADER + "area: "+area);
-
-    var rutAMDOCS = Believe.getRut(subscriberId);
-    log.info(LOG_HEADER + " rutAMDOCS: "+rutAMDOCS);
         
     var tokenAxway = Security.getToken();
     log.info(LOG_HEADER + " tokenAxway: "+tokenAxway);
 
-    var tokenAmdocs = Security.tokenAmdocs(rutAMDOCS, tokenAxway);
+    var rutAMDOCS = Believe.getRut(subscriberId);
+    var rut = rutAMDOCS.replace('-', '');
+    log.info(LOG_HEADER + " rutAMDOCS: "+rutAMDOCS+", rut formateado: "+rut);
+
+    var tokenAmdocs = Security.tokenAmdocs(rut, tokenAxway);
     log.info(LOG_HEADER + " tokenAmdocs: "+tokenAmdocs);
 
     resultMapOrdersList = Believe.getOrdersList(customerId,tokenAxway,tokenAmdocs);	
