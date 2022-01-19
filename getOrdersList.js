@@ -8,63 +8,82 @@
     ? https://apix.movistar.cl/MCSS-Common/commerce/customer/156377317/orders?st=0&ps=30&lo=es_CL&sc=SS
 */
 
+var LOG_HEADER = "Believe.getOrdersList -> ";
+log.info(LOG_HEADER + "START");
+log.info(LOG_HEADER + "Parametros recibidos: customerId: "+customerId+" - tokenAxway: "+tokenAxway+" - tokenAmdocs: "+tokenAmdocs);
+
+var completMap = new java.util.HashMap();
+var headers = new java.util.HashMap();
+var calendar = new java.util.GregorianCalendar();
+var cacheKey = "";
+
+var httpMethod = "POST";
+var dsaRef="LISTADO_ORDEN_AMDOCS";  //! HACE REFERENCIA A LA API DEFINIDA EN LOS DSAs DE LA CONSOLA (ENVIROMENT->DSA CONNECTIONS)
+var restAddress = "customer/"+customerId+"/orders?st=0&ps=30&lo=es_CL&sc=SS";
+var requestBody = '';
+
+headers.put("Authorization", "Bearer "+ tokenAxway);    
+headers.put("AuthorizationMCSS", tokenAmdocs);
+
+var salida = processData();
+
+return salida;
+
+
 
 function processData(){
     
     var resultMap = new java.util.HashMap();
+    var finalResult = new java.util.HashMap();
+    var array = [];
+    //var [code, message] = [null, null];
+    var code;
+    var message;
 
     try {
     	
         //var dataOrders =  backEndCall();
         var dataOrders = Utility.readResourceFile("smp/chile/simuladores/Queryorderlist.json");
  	    
-        if (Object.keys(dataOrders).length === 0) {
+        if (dataOrders != null) {
 
             log.info(LOG_HEADER + "Objeto completo de la funcion processData(): " + dataOrders +"]");
         
             completMap = Utility.fnJsonToMap(dataOrders);
             log.info(LOG_HEADER + "Mapa completo fnJsonToMap de la funcion processData(): " + completMap);
 
-            if (completMap.size() != 0) {
 
-                resultMap =  getMapOrdersList();
+            if (completMap.size() != null) {
 
+                array = getMapOrdersList();
+                code =  '0';
+                message = "OK";
             } else {
 
                 log.error(LOG_HEADER + "Result convert Json to Map is NULL");
-                resultMap.put("resultCode",-1);
-                resultMap.put("resultMessage","Response convert Json to Map is NULL");
+                code = '-1';
+                message = "Response convert Json to Map is NULL";
             }
         }else{
 
             log.error(LOG_HEADER + "Response is NULL");
-            resultMap.put("resultCode",-1);
-            resultMap.put("resultMessage","Response is NULL");
+            code = '-1';
+            message = "Response is NULL";
         }
         
     } catch(e) {
 
-        log.error(LOG_HEADER + "Error de excepcion en la funcion processData(): "+e)
-	    var error = new java.lang.String(e.message);
-        
-        if(error.contains("HTTP response=[Not Found] code=[404]") || error.contains("WSDLException: faultCode=OTHER_ERROR")){
-            
-            resultMap.put("resultCode","99");
-        } else if(error.contains("HTTP response=[Internal Server Error] code=[500]")){
-            
-            resultMap.put("resultCode","99");
-        } else if(error.contains("SocketTimeoutException")){
-           
-            log.warn("Request timeout")
-            resultMap.put("resultCode","-2");
-        }else{
-            
-            resultMap.put("resultCode","99");
-        }
+        log.info(LOG_HEADER + "Error function processData(): "+e);
+        var error = new java.lang.String(e.message);
 
-        resultMap.put("resultMessage", e)
+        code = (error.contains("SocketTimeoutException") || error.contains("Connection timed out")) ? '-2' : '99';
+        message = error;
     }
     
+    resultMap.put("listOfPetitions", array);
+    resultMap.put("resultCode", code);
+    resultMap.put("resultMessage", message);
+
     log.info(LOG_HEADER + "Mapa procesado en la funcion processData(): " + resultMap);
     
     //log.info(LOG_HEADER + "Resultado string de la funcion processData(): " + str);
@@ -86,37 +105,50 @@ function getMapOrdersList(){
 
         log.info(LOG_HEADER +"Listado de Ordenes: "+orders);
 
-        if (orders.size() != 0) {
+        if (orders.size() != 0 || orders != null) {
 
             for(var i=0; i<orders.size(); i++) {
                
-                if(orders.get(i).get("status") == 'OPEN' && (orders.get(i).get("orderTypeX9") == 'PR' || orders.get(i).get("orderTypeX9") == 'CH')) {                           
+                var status = orders.get(i).get("status");
+
+                if(status == 'OPEN' && (orders.get(i).get("orderTypeX9") == 'PR' || orders.get(i).get("orderTypeX9") == 'CH')) {                           
                   
                     var mapOrdersList = new java.util.HashMap();
-                    
-                    mapOrdersList.put("referenceNumber", orders.get(i).get("referenceNumber"));
-                    mapOrdersList.put("customerId", orders.get(i).get("customerIdX9"));                    
-                    mapOrdersList.put("creationDate", orders.get(i).get("creationDate"));
+                    // var date = new java.text.SimpleDateFormat("dd-MM-yyyy hh:mm");
+                    // var fechaCompromiso = date.parse(orders.get(i).get("serviceRequiredDate"));
+                    // var creationDate = date.parse(orders.get(i).get("creationDate"));
 
-                    arrayOrders.add(mapOrdersList); //[{}, {}, {}]
+                    mapOrdersList.put("peticionId", orders.get(i).get("referenceNumber"));
+                    mapOrdersList.put("estado", '1');
+                    mapOrdersList.put("estadoDesc", status);
+                    mapOrdersList.put("tica", orders.get(i).get("orderTypeX9"));
+                    mapOrdersList.put("ticaDesc", "");
+                    //mapOrdersList.put("fechaCompromiso", fechaCompromiso);
+                    mapOrdersList.put("fechaCompromiso", "");
+                    mapOrdersList.put("tipoAgenda", "");
+                    mapOrdersList.put("tipoAgendaDesc", "");
+                    mapOrdersList.put("etapaProceso", "");
+                    mapOrdersList.put("tipoTrabajo", "");
+                    mapOrdersList.put("tipoTrabajoDesc", "");
+                    // mapOrdersList.put("fechaEmision", creationDate);
+                    mapOrdersList.put("fechaEmision", "");
+                    mapOrdersList.put("fechaCompromisoDesc", "");
+
+                    arrayOrders.add(mapOrdersList); //*[{}, {}, {}]
                 }
             }
-
-            resultMapOrdersList.put("petitionDetails", arrayOrders);
-            listOfPetitions
-
-        } else {
-            resultMapOrdersList.put("petitionDetails", null);
-        }
+        } 
 
     }catch(e){
-        //log.error(LOG_HEADER + "Error de excepcion en funcion getObjectResult(): " + e);
-        resultMapOrdersList.put("error", LOG_HEADER + "Error en la funcion getObjectResult(): "+e);
+        log.error(LOG_HEADER + "Error de excepcion en funcion getObjectResult(): " + e);
+        //resultMapOrdersList.put("error", LOG_HEADER + "Error en la funcion getObjectResult(): "+e);
     }
 
-    log.info(LOG_HEADER + "Mapa procesado en la funcion getMapOrdersList(): " + resultMapOrdersList);
-
-    return resultMapOrdersList;
+    //resultMapOrdersList.put("listOfPetitions", arrayOrders);
+    //log.info(LOG_HEADER + "Mapa procesado en la funcion getMapOrdersList(): " + resultMapOrdersList);
+    log.info(LOG_HEADER +"ArrayOrders: "+arrayOrders);
+    //return resultMapOrdersList;
+    return arrayOrders;
 }
 
 function backEndCall() {
@@ -146,24 +178,3 @@ function backEndCall() {
 
    return dsaResponse;
 }
-
-var LOG_HEADER = "Believe.getOrdersList -> ";
-log.info(LOG_HEADER + "START");
-log.info(LOG_HEADER + "Parametros recibidos: customerId: "+customerId+" - tokenAxway: "+tokenAxway+" - tokenAmdocs: "+tokenAmdocs);
-
-var completMap = new java.util.HashMap();
-var headers = new java.util.HashMap();
-var calendar = new java.util.GregorianCalendar();
-var cacheKey = "";
-
-var httpMethod = "POST";
-var dsaRef="LISTADO_ORDEN_AMDOCS";  //! HACE REFERENCIA A LA API DEFINIDA EN LOS DSAs DE LA CONSOLA (ENVIROMENT->DSA CONNECTIONS)
-var restAddress = "customer/"+customerId+"/orders?st=0&ps=30&lo=es_CL&sc=SS";
-var requestBody = '';
-
-headers.put("Authorization", "Bearer "+ tokenAxway);    
-headers.put("AuthorizationMCSS", tokenAmdocs);
-
-var salida = processData();
-
-return salida;
