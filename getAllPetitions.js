@@ -1,3 +1,15 @@
+/*
+    ! PARAMETERS RECIVED:
+
+    * subscriberId String
+    * userName String
+    * smpSessionId String
+    * soName String
+    * compName String
+    * additionalInputParams String
+    * 
+*/
+
 var LOG_HEADER = "VPI.getAllPetitions -> ";
 log.info(LOG_HEADER + "START");
 
@@ -13,12 +25,25 @@ log.info(LOG_HEADER +"subscriberBelieve: " + resultSubscriberBelieve);
 var subscriberId = resultSubscriberBelieve.get("varsubscriberId")
 log.info(LOG_HEADER +"varsubscriberId: " + subscriberId);
 
+var rutBelieve = resultSubscriberBelieve.get("varrutsubscriberId");
+log.info(LOG_HEADER +"Rut Utility.getSubscriberBelieve(): " + rutBelieve);
+
+if (rutBelieve == "" || rutBelieve == null) {
+    rutBelieve=additionalInputParams.get("rutBelieve");
+    log.info(LOG_HEADER +"rutBelieve additionalInputParams: " + rutBelieve);
+
+    /*if(rutBelieve == "" || rutBelieve == null || rutBelieve == 'undefined'){
+        rutBelieve = Believe.getRut(subscriberId);
+        log.info(LOG_HEADER +"Believe.getRut: " + rutBelieve);
+    }*/
+}
 //var subscriberId = "13078767-3|0001000001268";  //! COMENTAR EN DESARROLLO
 var area = subscriberId.substring(0,3); //! 000120000012203
 log.info(LOG_HEADER + "area: "+area);
 
 
 result = (area == '000' ? callOrdersAmdocs() : callPetitionsLegado());
+log.info(LOG_HEADER + " result: "+result);
 //result = callPetitionsLegado();
 
 return result;
@@ -26,32 +51,16 @@ return result;
 function callOrdersAmdocs(){
 
     var resultMapOrdersList = new java.util.HashMap();
-    var list = new java.util.HashMap();
 
     try {
 
-        log.info(LOG_HEADER + "BELIEVE BRAULIO");
-    
-        var rutBelieve = resultSubscriberBelieve.get("varrutsubscriberId");
-        log.info(LOG_HEADER +"varrutsubscriberId: " + rutBelieve);
-
+        log.info(LOG_HEADER + "BELIEVE");
+        
         var customerId = subscriberId.substring(3);
         log.info(LOG_HEADER + "customerId: "+customerId);
             
         var tokenAxway = Security.getToken();
         log.info(LOG_HEADER + " tokenAxway: "+tokenAxway);
-        
-        //rutBelieve = (rutBelieve != null ? rutBelieve : null);
-        //log.info(LOG_HEADER + " rut: "+rutBelieve);
-
-        /*if (resultSubscriberBelieve.get("varrutsubscriberId") != null){
-                rut = resultSubscriberBelieve.get("varrutsubscriberId");
-        }
-        else{
-                rut = Believe.getRut(subscriberId);
-        }*/
-
-        
         
         var rutAmdocs = new java.lang.String(rutBelieve);
         log.info(LOG_HEADER + " rutAMDOCS: "+rutAmdocs);
@@ -60,86 +69,28 @@ function callOrdersAmdocs(){
         log.info(LOG_HEADER + "resultMapTokenAMDOCS: "+ resultMapTokenAMDOCS);
 
         var tokenAmdocs = resultMapTokenAMDOCS.get("tokenAMDOCS");
-        log.info(LOG_HEADER + "TokenAMDOCS: "+ tokenAmdocs);
+        log.info(LOG_HEADER + "TokenAMDOCS: "+ tokenAmdocs);        
 
-        
-        var resultMapOrdersDetails = new java.util.HashMap();        
-        
+        //var dataBillingCustomer = Believe.contextualizarBillingCustomer(subscriberId, customerId,tokenAxway,tokenAmdocs);
+
+        customerId = '156377317';
+
+        var dataBillingCustomer = Believe.executeRequestUserInformation(customerId, subscriberId, tokenAxway, tokenAmdocs);
+        log.info(LOG_HEADER + " dataBillingCustomer: "+dataBillingCustomer);
+
         resultMapOrdersList = Believe.getOrdersList(customerId,tokenAxway,tokenAmdocs);	
         //list = resultMapOrdersList.get("listOfPetitions");
         
-        log.info(LOG_HEADER + " mapList: "+resultMapOrdersList);
-        //log.info(LOG_HEADER + " List: "+list);
-
-        var ordersList = new java.util.ArrayList();
-         // {listOfPetitions=[{},{},{}]}
-
-        if (list.size() != 0) {
-
-            for(var i=0; i<list.size(); i++) { //! SE REALIZA UN FOR POR SI VIENE MAS DE UN LISTADO DE ORDENES 
-
-                /*var mapOrdersList = new java.util.HashMap();
-                    
-                list.get(i).get("peticionId");
-                list.get(i).get("estado");
-                list.get(i).get("estadoDesc");
-                list.get(i).get("tica");
-                list.get(i).get("ticaDesc", "");
-                list.get(i).get("fechaCompromiso");
-                list.get(i).get("tipoAgenda");
-                list.get(i).get("tipoAgendaDesc");
-                list.get(i).get("etapaProceso");
-                list.get(i).get("tipoTrabajo");
-                list.get(i).get("tipoTrabajoDesc");
-                list.get(i).get("fechaEmision");
-                list.get(i).get("fechaCompromisoDesc");*/
-
-                log.info(LOG_HEADER + " list: "+list.get(i));
-            }
-
-        }        
-
-
-        
-        //! HACER CICLO FOR PARA RECORRER LAS DISTINTAS ORDENES
-        //! INGRESAR A UN ARRAY TODAS LAS ORDENES QUE PUEDAN VENIR
-
-        /*
-        var orders = new java.util.ArrayList();
-        orders = resultMapOrdersList.get("orders");
-
-        if (orders.size() != 0) {
-
-            for(var i=0; i<orders.size(); i++) { //! SE REALIZA UN FOR POR SI VIENE MAS DE UN LISTADO DE ORDENES 
-
-                var referenceNumber = orders.get(i).get("referenceNumber");
-                var customId = orders.get(i).get("customerId");
-                var creationDate = orders.get(i).get("creationDate");
-
-                log.info(LOG_HEADER + " referenceNumber: "+referenceNumber+", customId: "+customId+", creationDate"+creationDate);
-
-                resultMapOrdersDetails = Believe.getOrdersDetail(referenceNumber, customId, creationDate, tokenAmdocs); //! REALIZAR FOR POR SI VIENEN MUCHOS DETALLES DE ORDENES
-                
-                log.info(LOG_HEADER + " mapDetails: "+resultMapOrdersDetails);
-
-            }
-        }else{
-            log.error(LOG_HEADER + "Response order detail is NULL");
-            resultMapOrdersDetails.put("resultCode",-1);
-            resultMapOrdersDetails.put("resultMessage","Response order detail is NULL");
-        }*/
+        log.info(LOG_HEADER + " mapa listado de ordenes: "+resultMapOrdersList);
         
     } catch (e) {
 
         log.info(LOG_HEADER + "Error function callOrdersAmdocs(): "+e);
-        var error = new java.lang.String(e.message);
 
-        /*var code = (error.contains("SocketTimeoutException") || error.contains("Connection timed out")) ? '-2' : '99';
-
-        resultMapOrdersList.put("resultCode", code);
-        resultMapOrdersList.put("resultMessage", error);*/
     }
 
+    log.info(LOG_HEADER + " resultMapOrdersList: "+resultMapOrdersList);
+    
     return resultMapOrdersList;
 }
 
@@ -168,7 +119,7 @@ function callPetitionsLegado(){
                 //log.info("Response: "+response);
                 returnMap = Utility.preparePetitionsListMap(response,"peticion");
                         
-                if(returnMap!=null && returnMap!="" && returnMap!=undefined)
+                if(returnMap!=null || returnMap!="" || returnMap!=undefined)
                 {	
                     //log.info("Response Map: "+returnMap);
                     var statusCode = returnMap.get("resultCode");
@@ -184,17 +135,17 @@ function callPetitionsLegado(){
                 }
                 else
                 {
-                    returnMap.put("resultCode",-1);
+                    returnMap.put("resultCode",'-1');
                     returnMap.put("resultMessage","Response is not String");
                 }
             }else{
                 log.error("Response is not String");
-                returnMap.put("resultCode",-1);
+                returnMap.put("resultCode",'-1');
                 returnMap.put("resultMessage","Response is not String");
             }
         }else{
             log.error("Response is NULL");
-            returnMap.put("resultCode",-1);
+            returnMap.put("resultCode",'-1');
             returnMap.put("resultMessage","Response is NULL");
         }
 

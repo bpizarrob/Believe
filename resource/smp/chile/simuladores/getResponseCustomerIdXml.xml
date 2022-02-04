@@ -1,0 +1,20 @@
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:int="http://es/indra/tre/DMS/interfaces">
+   <soapenv:Header/>
+   <soapenv:Body>
+      <int:getDiagInfoByPhoneResponse>
+         <diagInfoItem>
+            <phone>0001000001128</phone>
+            <psAccess>000001103</psAccess>
+            <psIsp>000001104</psIsp>
+            <planCode>11353</planCode>
+            <planDescription>Banda Ancha 500/500Mbps FO</planDescription>
+            <downstream>512000</downstream>
+            <upstream>512000</upstream>
+            <netServiceName>br11353</netServiceName>
+            <iptvId>12090771691</iptvId>
+            <serviceClientId>12090771694</serviceClientId>
+            <amdId>156377317</amdId>
+         </diagInfoItem>
+      </int:getDiagInfoByPhoneResponse>
+   </soapenv:Body>
+</soapenv:Envelope>

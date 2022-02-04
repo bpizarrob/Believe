@@ -3,9 +3,6 @@
     * customerId String
     * tokenAxway String
     * tokenAmdocs String
-    * 
-    * 
-    ? customer/156377317/orders?st=0&ps=30&lo=es_CL&sc=SS
 */
 
 var LOG_HEADER = "Believe.getOrdersList -> ";
@@ -34,14 +31,19 @@ function processData(){
         //! START VALIDATION TEST. DELETE "IF" AND "ELSE" IN PRODUCTION
 
         var dataOrders;
+        
+        dataOrders = Utility.readResourceFile("smp/chile/simuladores/Queryorderlist.json");
 
-        if (customerId != "1000001006" ){
-            dataOrders = Utility.readResourceFile("smp/chile/simuladores/Queryorderlist.json");
-        }
-        else {
-            // dataOrders = Generic_REST_Connector.executeREST(restAddress, requestBody, headers,httpMethod, dsaRef);
-            dataOrders = backEndCall();
-        }
+        // if (customerId == "156377317" ){
+
+        //     log.info(LOG_HEADER + "Llamar a API... ");
+        //     dataOrders = backEndCall();
+        // }
+        // else {
+
+        //     log.info(LOG_HEADER + "Llamar a simulador... ");
+        //     dataOrders = Utility.readResourceFile("smp/chile/simuladores/Queryorderlist.json");
+        // }
 
         log.info(LOG_HEADER + "dataOrders: "+dataOrders);
         
@@ -90,7 +92,6 @@ function processData(){
     log.info(LOG_HEADER + "Mapa procesado en la funcion processData(): " + resultMap);
     
     //log.info(LOG_HEADER + "Resultado string de la funcion processData(): " + str);
-    log.info(LOG_HEADER +"FIN");
     //console.log(str);
     return resultMap;
     
@@ -101,20 +102,25 @@ function getMapOrdersList(){
     var resultMapOrdersList = new java.util.HashMap();
     var arrayOrders = new java.util.ArrayList();
     var orders = new java.util.ArrayList();
+    // var orders;
 
     try{
         
         orders = completMap.get("datos").get("Orders").get("orders");
 
         log.info(LOG_HEADER +"Listado de Ordenes: "+orders);
+        
+        log.info(LOG_HEADER +"Cantidad de ordenes: "+orders.size());
 
-        if (orders.size() != 0 || orders != null) {
+        if (orders.size() != 0 ) {
 
             //! RECORRIDO DE TODAS LAS LISTAS DE ORDENES
             for(var i=0; i<orders.size(); i++) {
-               
+
                 var status = orders.get(i).get("status");
                 var orderType = orders.get(i).get("orderTypeX9");
+
+                log.info(LOG_HEADER +"Estado de la orden "+(i+1)+": "+status);
 
                 if(status == 'OPEN' && (orderType == 'PR' || orderType == 'CH')) {                           
                   
@@ -123,12 +129,15 @@ function getMapOrdersList(){
                     // var fechaCompromiso = date.parse(orders.get(i).get("serviceRequiredDate"));
                     // var creationDate = date.parse(orders.get(i).get("creationDate"));
                     var fCompromiso = orders.get(i).get("serviceRequiredDate");
-                    var fCreationDate = orders.get(i).get("creationDate");
-                    
-                    var fechaCompromiso = Utility.convertTimestampToDate(fCompromiso.toString());
-                    log.info(LOG_HEADER +"fechaCompromiso: "+fechaCompromiso);
+                    log.info(LOG_HEADER +"timestamp fCompromiso: "+fCompromiso);
 
-                    var creationDate = Utility.convertTimestampToDate(fCreationDate.toString());                    
+                    var fCreationDate = orders.get(i).get("creationDate");
+                    log.info(LOG_HEADER +"timestamp fCreationDate: "+fCreationDate);
+
+                    var fechaCompromiso = Utility.convertTimestampToDate(fCompromiso);
+                    log.info(LOG_HEADER +"fechaCompromiso: "+fechaCompromiso);
+                    
+                    var creationDate = Utility.convertTimestampToDate(fCreationDate);                    
                     log.info(LOG_HEADER +"creationDate: "+creationDate);
 
                     //! Incluir todos tipo de ordenes disponibles en excel MapeoCRM.xls -> Hoja "lista ordenes"
@@ -149,6 +158,7 @@ function getMapOrdersList(){
                     mapOrdersList.put("etapaProceso", "");
                     mapOrdersList.put("tipoTrabajo", "");
                     mapOrdersList.put("tipoTrabajoDesc", "");
+                    mapOrdersList.put("time", fCreationDate);
                     mapOrdersList.put("fechaEmision", creationDate);
                     mapOrdersList.put("fechaCompromisoDesc", "");
 
@@ -169,33 +179,6 @@ function getMapOrdersList(){
     //return resultMapOrdersList;
     return arrayOrders;
 }
-
-/*
-function convertTimeStampToDate(timestamp){
-
-    var LOG_HEADER = "Utility.convertTimestampToDate -> ";
-    log.info(LOG_HEADER + "START");
-    log.info(LOG_HEADER + "Parametros de entrada. timestamp: "+timestamp);
-
-
-    var timestamp = timestamp.substr(0, 10);
-    log.info(LOG_HEADER + "substr: "+timestamp);
-
-    var date = new Date(timestamp * 1000);
-
-    var day = ('0'+date.getDate()).slice(-2);
-    var month = ('0'+date.getMonth()).slice(-2); 
-    var year = date.getFullYear();
-    var hours = ('0'+date.getHours()).slice(-2);
-    var minutes = ('0'+date.getMinutes()).slice(-2);
-    var seconds = ('0'+date.getSeconds()).slice(-2);
-
-    log.info(LOG_HEADER +"Fecha:  "+day+"/"+month+"/"+year+" "+hours+":"+minutes+":"+seconds);
-
-    log.info(LOG_HEADER + "END");
-    return day+"/"+month+"/"+year+" "+hours+":"+minutes+":"+seconds;    
-}
-*/
 
 
 function backEndCall() {

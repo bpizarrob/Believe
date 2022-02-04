@@ -1,0 +1,245 @@
+{
+    "estado": {
+        "codigoEstado": "200",
+        "glosaEstado": "OK"
+    },
+    "datos": {
+        "Orders": {
+            "startIndex": 0,
+            "orders": [
+                {
+                    "immediatePriceX9": {
+                        "finalAmount": 0.00
+                    },
+                    "originatingSalesChannel": "MS",
+                    "orderTypeX9": "ND",
+                    "activityStatusX9": "None",
+                    "serviceRequiredDate": 1637290799000.00,
+                    "orderItems": [
+                        {
+                            "serviceRequiredDate": 1637290799000.00,
+                            "actionType": "NOTIFY_DISCOUNTS",
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12102901024",
+                            "createdBy": "server",
+                            "referenceNumber": "379437688A",
+                            "status": "DONE"
+                        }
+                    ],
+                    "customerIdX9": "156377317",
+                    "referenceNumber": "379437687A",
+                    "currentSalesChannel": "MS",
+                    "status": "CLOSED",
+                    "creationDate": 1637268840000.00
+                },
+                {
+                    "immediatePriceX9": {
+                        "finalAmount": 0.00
+                    },
+                    "originatingSalesChannel": "MS",
+                    "orderTypeX9": "CR",
+                    "activityStatusX9": "None",
+                    "serviceRequiredDate": 1637268774000.00,
+                    "orderItems": [
+                        {
+                            "serviceRequiredDate": 1637268774000.00,
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12082213176",
+                            "createdBy": "MASS",
+                            "referenceNumber": "379437445A",
+                            "status": "DONE"
+                        }
+                    ],
+                    "recurringPrice": {
+                        "finalAmount": 16290.00
+                    },
+                    "customerIdX9": "156377317",
+                    "oneTimePrice": {
+                        "finalAmount": 1900.00
+                    },
+                    "referenceNumber": "379437426A",
+                    "currentSalesChannel": "MS",
+                    "status": "CLOSED",
+                    "currency": "CLP",
+                    "creationDate": 1637268790000.00
+                },
+                {
+                    "immediatePriceX9": {
+                        "finalAmount": 0.00
+                    },
+                    "originatingSalesChannel": "MS",
+                    "orderTypeX9": "ND",
+                    "activityStatusX9": "None",
+                    "serviceRequiredDate": 1636513199000.00,
+                    "orderItems": [
+                        {
+                            "serviceRequiredDate": 1636513199000.00,
+                            "actionType": "NOTIFY_DISCOUNTS",
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12102901024",
+                            "createdBy": "server",
+                            "referenceNumber": "375316671A",
+                            "status": "DONE"
+                        }
+                    ],
+                    "customerIdX9": "156377317",
+                    "referenceNumber": "375316669A",
+                    "currentSalesChannel": "MS",
+                    "status": "CLOSED",
+                    "creationDate": 1636488390000.00
+                },
+                {
+                    "immediatePriceX9": {
+                        "finalAmount": 0.00
+                    },
+                    "originatingSalesChannel": "MS",
+                    "orderTypeX9": "SC",
+                    "activityStatusX9": "None",
+                    "serviceRequiredDate": 1636443913000.00,
+                    "orderItems": [
+                        {
+                            "serviceRequiredDate": 1636443913000.00,
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12082213176",
+                            "createdBy": "MASS",
+                            "referenceNumber": "375315706A",
+                            "status": "DONE"
+                        }
+                    ],
+                    "customerIdX9": "156377317",
+                    "referenceNumber": "375315705A",
+                    "currentSalesChannel": "MS",
+                    "status": "CLOSED",
+                    "creationDate": 1636488199000.00
+                },
+                {
+                    "immediatePriceX9": {
+                        "finalAmount": 0.00
+                    },
+                    "originatingSalesChannel": "CEC",
+                    "orderTypeX9": "ND",
+                    "activityStatusX9": "None",
+                    "serviceRequiredDate": 1636081199000.00,
+                    "orderItems": [
+                        {
+                            "serviceRequiredDate": 1636081199000.00,
+                            "actionType": "NOTIFY_DISCOUNTS",
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12082213176",
+                            "createdBy": "server",
+                            "referenceNumber": "373636988A",
+                            "status": "DONE"
+                        },
+                        {
+                            "serviceRequiredDate": 1636081199000.00,
+                            "actionType": "NOTIFY_DISCOUNTS",
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12102901024",
+                            "createdBy": "server",
+                            "referenceNumber": "373636989A",
+                            "status": "DONE"
+                        }
+                    ],
+                    "customerIdX9": "156377317",
+                    "referenceNumber": "373636987A",
+                    "currentSalesChannel": "CEC",
+                    "status": "CLOSED",
+                    "creationDate": 1636060307000.00
+                },
+                {
+                    "immediatePriceX9": {
+                        "finalAmount": 0.00
+                    },
+                    "originatingSalesChannel": "CEC",
+                    "orderTypeX9": "CH",
+                    "activityStatusX9": "None",
+                    "serviceRequiredDate": 1636081199000.00,
+                    "orderItems": [
+                        {
+                            "serviceRequiredDate": 1636081199000.00,
+                            "actionType": "CHANGE_PRODUCT",
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12082213148",
+                            "createdBy": "ate_gnegru",
+                            "referenceNumber": "373535921A",
+                            "status": "DONE"
+                        },
+                        {
+                            "serviceRequiredDate": 1636081199000.00,
+                            "actionType": "CHANGE_PRODUCT",
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12082213176",
+                            "createdBy": "ate_gnegru",
+                            "referenceNumber": "373535922A",
+                            "status": "DONE"
+                        },
+                        {
+                            "serviceRequiredDate": 1636081199000.00,
+                            "actionType": "ADD_PRODUCT",
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12102901024",
+                            "createdBy": "ate_gnegru",
+                            "referenceNumber": "373535923A",
+                            "status": "DONE"
+                        }
+                    ],
+                    "recurringPrice": {
+                        "finalAmount": 43980.00
+                    },
+                    "customerIdX9": "156377317",
+                    "oneTimePrice": {
+                        "finalAmount": 0.00
+                    },
+                    "referenceNumber": "373535920A",
+                    "currentSalesChannel": "CEC",
+                    "status": "CLOSED",
+                    "currency": "CLP",
+                    "creationDate": 1636040329000.00
+                },
+                {
+                    "immediatePriceX9": {
+                        "finalAmount": 0.00
+                    },
+                    "originatingSalesChannel": "CEC",
+                    "orderTypeX9": "PR",
+                    "activityStatusX9": "None",
+                    "serviceRequiredDate": 1632884399000.00,
+                    "orderItems": [
+                        {
+                            "serviceRequiredDate": 1632884399000.00,
+                            "actionType": "ADD_PRODUCT",
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12082213148",
+                            "createdBy": "ate_gnegru",
+                            "referenceNumber": "361496572A",
+                            "status": "DONE"
+                        },
+                        {
+                            "serviceRequiredDate": 1632884399000.00,
+                            "actionType": "ADD_PRODUCT",
+                            "lineOfBusiness": "WL",
+                            "productServiceID": "12082213176",
+                            "createdBy": "ate_gnegru",
+                            "referenceNumber": "361496602A",
+                            "status": "DONE"
+                        }
+                    ],
+                    "recurringPrice": {
+                        "finalAmount": 20990.00
+                    },
+                    "customerIdX9": "156377317",
+                    "oneTimePrice": {
+                        "finalAmount": 0.00
+                    },
+                    "referenceNumber": "361496566A",
+                    "currentSalesChannel": "CEC",
+                    "status": "CLOSED",
+                    "currency": "CLP",
+                    "creationDate": 1632864955000.00
+                }
+            ],
+            "itemsPerPage": 7,
+            "totalResults": 7
+        }
+    }
+}

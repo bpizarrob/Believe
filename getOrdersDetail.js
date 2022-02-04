@@ -2,932 +2,473 @@
      ! PARAMETERS RECIVED:
      * referenceNumber String
      * customerId String
-     * creationDate String
+     * creationDate String     
      * tokenAmdocs String
-     * 
-     * 
-     ? https://sucursalvirtualmovistar.movistar.cl/mcss/ecommerce/
-     ? cart/272108989A?ci=10272159&lo=es_CL&sc=SS&time=1539873623390&locale=es_CL&salesChannel=SS
+     * tokenAxway String
  */
 
-
-     function processData(){
-
-        var resultMap = new java.util.HashMap();
+     var LOG_HEADER = "Believe.getOrdersDetail ->"; 
+     log.info(LOG_HEADER + "START");
+     log.info(LOG_HEADER + "Parametros recibidos: referenceNumber: "+referenceNumber+" - customerId: "+customerId+" - creationDate: " +creationDate+" - tokenAxway: "+tokenAxway+" - tokenAmdocs: "+tokenAmdocs);
      
-         try {
+     var completMap = new java.util.HashMap();
+
+     var salida = processData(); 
      
-           //var dataOrders =  backEndCall(); //! DATA DE PRODUCCION (DESCOMENTAR CUANDO SE REGULARIZE LA API)
-           var dataOrders = Utility.readResourceFile("smp/chile/simuladores/QueryOrdersDetail.json"); //! DATA DE PRUEBAS (COMENTAR CUANDO SE REGULARIZE LA API).
-           
-           if (Object.keys(dataOrders).length === 0) {
-               
-                log.info(LOG_HEADER + "Objeto JSON de la funcion processData(): " + dataOrders);
-           
-                completMap = Utility.fnJsonToMap(dataOrders);
-                log.info(LOG_HEADER + "Mapa completo fnJsonToMap de la funcion processData(): " + completMap);
+     log.info(LOG_HEADER + "salida: "+salida);
+     log.info(LOG_HEADER + "END");
+
+     return salida;
+
+
+   function processData(){
+
+      var resultMap = new java.util.HashMap();
+      var arrayPetitionDetails = new java.util.ArrayList(); 
+      var code;
+      var message;
+
+      try {
+
+         //! START VALIDATION TEST. DELETE "IF" AND "ELSE" IN PRODUCTION
+
+        var dataOrders;
+        
+        dataOrders = Utility.readResourceFile("smp/chile/simuladores/QueryOrdersDetail.json");
+
+        // if (customerId == "156377317" ){
+
+        //     log.info(LOG_HEADER + "Llamar a API... ");
+        //     dataOrders = backEndCall();
+        // }
+        // else {
+
+        //     log.info(LOG_HEADER + "Llamar a simulador... ");
+        //     dataOrders = Utility.readResourceFile("smp/chile/simuladores/Queryorderlist.json");
+        // }
+
+        log.info(LOG_HEADER + "dataOrders: "+dataOrders);
+        
+        //! END VALIDATION TEST.
+
+         if (dataOrders != null) {
             
-                if (completMap.size() !== 0) {
+               log.info(LOG_HEADER + "Objeto JSON de la funcion processData(): " + dataOrders);
+         
+               completMap = Utility.fnJsonToMap(dataOrders);
+               log.info(LOG_HEADER + "Mapa completo fnJsonToMap de la funcion processData(): " + completMap);
+         
+               if (completMap.size() != 0) {
+                  
+                  var data = completMap.get("datos").get("ImplCart");
 
-                    resultMap =  getMapOrdersDetails();
-                } else {
+                  var nameKey = 'currentCartDiscounts';
+                  resultMap.put(nameKey, getDataExtra(data, nameKey));
 
-                    log.error(LOG_HEADER + "Result convert Json to Map is NULL");
-                    resultMap.put("resultCode",-1);
-                    resultMap.put("resultMessage","Response convert Json to Map is NULL");
-                }
-               
-           } else {
+                  nameKey = 'otherCustomerDiscounts';
+                  resultMap.put(nameKey, getDataExtra(data, nameKey));
 
-                log.error(LOG_HEADER + "Response is NULL");
-                returnMap.put("resultCode",-1);
-                resultMap.put("resultMessage","Response service is NULL");               
-           }
-           
-     
-         }catch(e) {
-             
-             log.error(LOG_HEADER + "Error de excepcion en la funcion processData(): "+e)
-             var error = new java.lang.String(e.message);
-             
-             if(error.contains("HTTP response=[Not Found] code=[404]") || error.contains("WSDLException: faultCode=OTHER_ERROR")){
-                 
-                 resultMap.put("resultCode","99");
-             } else if(error.contains("HTTP response=[Internal Server Error] code=[500]")){
-                 
-                 resultMap.put("resultCode","99");
-             } else if(error.contains("SocketTimeoutException")){
-                
-                 log.warn("Request timeout")
-                 resultMap.put("resultCode","-2");
-             }else{
-                 
-                 resultMap.put("resultCode","99");
-             }
-     
-             resultMap.put("resultMessage", e)
+                  /*if(data.containsKey('currentCartDiscounts')){
+                     
+                     log.info(LOG_HEADER + "Key currentCartDiscounts existe");
+                     data.get('productOfferingInstanceID');
+                     data.get('productOfferingName');
+                     arrayCurrentCartDiscounts.add(data);
+                     resultMap.put("currentCartDiscounts", arrayCurrentCartDiscounts);
+                     
+      
+                  }else{
+                     log.info(LOG_HEADER + "Data NO contiene la key currentCartDiscounts");
+                  }
+
+                  if(data.containsKey('otherCustomerDiscounts')){
+                     
+                     log.info(LOG_HEADER + "Key otherCustomerDiscounts existe");
+                     data.get('productOfferingInstanceID');
+                     data.get('productOfferingName');
+                     arrayOtherCustomerDiscounts.add(data);
+                     resultMap.put("otherCustomerDiscounts", arrayOtherCustomerDiscounts);
+
+                  } else{
+                     log.info(LOG_HEADER + "Data NO contiene la key otherCustomerDiscounts");
+                  }  */            
+
+                  arrayPetitionDetails =  getMapOrdersDetails();
+                  code = '0';
+                  message = 'OK';
+
+               } else {
+
+                  log.info(LOG_HEADER + "Result convert Json to Map is NULL");
+                  code = '-1';
+                  message = 'Response convert Json to Map is NULL';                }
+            
+         } else {
+
+               log.info(LOG_HEADER + "Response is NULL");
+               code = '-1';
+               message = 'Response service is NULL';               
          }
          
-         //console.log(str.get("Items")[1].get("servicios").get("ServiciosProductoEquipment")[0].get("containedServices"));
-         ////console.log("\n"+LOG_HEADER + "Resultado de la funcion processData(): " + str);
-         //console.log("\n"+LOG_HEADER + "FIN");
-         log.info(LOG_HEADER + "Resultado mapa detallado de la funcion processData(): " + resultMap +"]");
-     
-         return resultMap;
-     
-     }
-     
-     function getMapOrdersDetails(){
-     
-         var items = new java.util.HashMap();
-         var arrayOrders = new java.util.ArrayList();
-         var totalItems = new java.util.ArrayList();
-         var arrayItems = new java.util.ArrayList();
+   
+      }catch(e) {
+            
+         log.info(LOG_HEADER + "Error function processData(): "+e);
+         var error = new java.lang.String(e.message);
+
+         code = (error.contains("SocketTimeoutException") || error.contains("Connection timed out")) ? '-2' : '99';
+         message = error;
+      }
+      
+      //console.log(str.get("Items")[1].get("servicios").get("ServiciosProductoEquipment")[0].get("containedServices"));
+      ////console.log("\n"+LOG_HEADER + "Resultado de la funcion processData(): " + str);
+      //console.log("\n"+LOG_HEADER + "FIN");
+      log.info(LOG_HEADER + "Resultado mapa detallado de la funcion processData(): " + arrayPetitionDetails);
+   
+
+      resultMap.put("petitionDetails", arrayPetitionDetails); //! AGREGAR CABEZERA DEL MAPA A CONSUMIR POR EL MODEL      
+      resultMap.put("resultCode", code);
+      resultMap.put("resultMessage", message);
+      //{petitionDetails=[{}]}
+
+      return resultMap;
+   
+   }
+   
+   function getDataExtra(data, nameKey){
+
+      var mapDataExtra= new java.util.HashMap();
+      var arrayResult = new java.util.ArrayList(); 
+   
+      if(data.containsKey(nameKey)){
+            
+         log.info(LOG_HEADER + "Key "+nameKey+" existe");
+   
+         var metadata = data.get(nameKey).get(0);
+   
+         mapDataExtra.put('productOfferingInstanceID', metadata.get('productOfferingInstanceID'));
+         mapDataExtra.put('productOfferingName', metadata.get('productOfferingName'));
+   
+         arrayResult.add(mapDataExtra);
          
-     
-         try{
-             
-           totalItems = completMap.get("datos").get("ImplCart").get("items");
-     
-           log.info(LOG_HEADER + "TOTAL DE ITEMS: " + totalItems.size());
-     
-           if (totalItems.size() != 0)  {
+   
+      }else{
+         log.info(LOG_HEADER + "Data NO contiene la key "+nameKey);
+      }
+   
+      return arrayResult;   
+   }
+
+   function getMapOrdersDetails(){
+   
+   //! RETORNAR UN ARRAY DE ORDENES COMO OBJETOS
                
-             //! RECORRIDO DE TODOS LOS ITEMS
-             for(var i=0; i<totalItems.size(); i++) { 
-                
-                 var mapItems = new java.util.HashMap();
-     
-                 var catalogId = totalItems.get(i).get("productCatalogId");
-                 var action = totalItems.get(i).get("action");
-                 var productName = totalItems.get(i).get("productName");
-     
-                 log.info(LOG_HEADER + "DATOS OBTENIDOS DE ITEMS: " + catalogId+ " - "+action+" - "+productName);
-                 
-                 var iptv = validateActionAndProductCatalogId(catalogId, action, 'ADD_PRODUCT', '3472512');
-                 var broadband = validateActionAndProductCatalogId(catalogId, action, 'ADD_PRODUCT', '3419372');
-                 var toip = validateActionAndProductCatalogId(catalogId, action, 'ADD_PRODUCT', '3482112');
-                 var aliasIptv = validateActionAndProductCatalogId(catalogId, action, 'ADD_PRODUCT', '3472512');
-                 var validaAltaRepetidor = validateActionAndProductCatalogId(catalogId, action, 'ADD_PRODUCT', '3467202');
-                 aliasIptv = (aliasIptv ? totalItems.get(i).get("productServiceId") : null);
-     
-                 var arraysCabezeraItems = ["altaIPTV", "altaBroadband", "altaTOIP", "nombreOrden", "aliasIPTV"];
-                 var arraysBodyItems = [iptv, broadband, toip, productName, aliasIptv];
-     
-                 //! RECORRE LAS CABEZERAS DE LAS ORDENES
-                 for(var arr=0; arr<arraysCabezeraItems.length; arr++){
-                    
-                    mapItems.put(arraysCabezeraItems[arr], arraysBodyItems[arr]);
-                 }
-     
-                 var arrayProductosIncluidos = new java.util.ArrayList();
-     
-                 arrayProductosIncluidos.add(catalogId);
-                 arrayProductosIncluidos.add(productName);
-     
-                 mapItems.put("ProductosIncluidos", arrayProductosIncluidos);
-     
-                 log.info(LOG_HEADER + "Mapa cabezeras: " + mapItems);
-     
-     
-                 //! ******************** SERVICIOS ********************
-     
-                 //! VALIDA SI EXISTE LA KEY "SERVICES" DENTRO DE CADA ITEM
-     
-                 log.info(LOG_HEADER + "ALL SERVICES: " + totalItems.get(i).get(("services")));
-     
-                 if (totalItems.get(i).containsKey("services")) {
-                    
-                    log.info(LOG_HEADER + "DESPUES: " + totalItems.get(i).get("services"));
-     
-                    var resultMapServicios = new java.util.HashMap();
-                    var services = new java.util.ArrayList();
-                    var arrayContained = new java.util.ArrayList();
-     
-                    services = totalItems.get(i).get("services"); //! CADA UNO DE LOS SERVICIOS
-                    
-                    var serviciosProductosBroadband = getServices(services, catalogId, '3419372');
-                    var serviciosProductosEquipment = getServices(services, catalogId, '3467202');
-                    var serviciosProductosIPTV = getServices(services, catalogId, '3472512');
-                    var serviciosProductosTOIP = getServices(services, catalogId, '3482112');
-     
-                    if(!serviciosProductosBroadband.isEmpty()) resultMapServicios.put("ServiciosProductoBroadband", serviciosProductosBroadband);
-                    if(!serviciosProductosEquipment.isEmpty()) resultMapServicios.put("ServiciosProductoEquipment", serviciosProductosEquipment);
-                    if(!serviciosProductosIPTV.isEmpty()) resultMapServicios.put("serviciosProductosIPTV", serviciosProductosIPTV);
-                    if(!serviciosProductosTOIP.isEmpty()) resultMapServicios.put("serviciosProductosTOIP", serviciosProductosTOIP);
-                    
-                    log.info(LOG_HEADER + "PRIMERA PARTE SERVICIOS: " + resultMapServicios);
-     
-     
-                    /*
-                    ! EVALUACION DEL ALTA DEL ALTA DEL REPETIDOR 
-     
-                    * $items[?(@.action=='ADD_PRODUCT' && @.productCatalogId=='3467202')]
-                    * services[*].containedServices[?(@.catalogItemID=='3469152')].catalogItemName
-     
-                    */
-                                     
-                     if(validaAltaRepetidor){
-     
-                     var servForAlta = getServices(services, catalogId, '3467202');
-     
-                       if (servForAlta.contains("containedServices")) {
-     
-                          for(var x=0; x<servForAlta.size(); x++) {
-     
-                             var statusAlta;
-     
-                             if (servForAlta.get(x).get("catalogItemID") == '3469152') {
-     
-                                statusAlta = true;
-                             } else {
-     
-                                statusAlta = false;                         
-                             }
-     
-                             arrayContained.add(statusAlta);
-     
-                          }
-     
-                       } else {
-                          arrayContained.add(false);
-                       }
-     
-                     }else{
-                       arrayContained.add(false);
-                       //resultMapServicios.put("altaRepetidor", false);
-                     } //! FIN VALIDA SI EXITE UN ALTA DE REPETIDOR
-                     
-                     log.info(LOG_HEADER + "Mapa servicios: " + resultMapServicios);
-     
-                     resultMapServicios.put("altaRepetidor", arrayContained);
-     
-                     mapItems.put("servicios", resultMapServicios);
-                     arrayItems.add(mapItems);
-                     
-                     
-                 }else {
-     
-                    mapItems.put("services", null);
-                 } //! FIN CONSULTA SI TIENE EXISTE KEY DE SERVICIOS ASOCIADOS
-     
-                 arrayItems.add(mapItems);
-     
-                 }
-              
-                 items.put("Items", arrayItems);
-     
-           } else {
-              items.put("Items", null);
-     
-           }//! FIN EVALUACION DE LOS ITEMS
-         }catch(e){
-     
-           items.put("Error", LOG_HEADER + "Error de excepcion en funcion getMapOrdersDetails(): " + e);
-         }
-     
-         log.info(LOG_HEADER + "Mapa items en la funcion getMapOrdersDetails(): " + items);
-     
-         return items;
-     }
-     
-     function validateActionAndProductCatalogId(productCatalogId, action, action_ref, productCatalogId_ref){
-     
-        //console.log("1111", productCatalogId_ref);
-         var result = ((action == action_ref && productCatalogId == productCatalogId_ref) ? true : false);
-     
-         return result;
-     }
-     
-     function getServices(services, productCatalogId, catalogoId){
-     
-         var validaProductCatalogId = ((productCatalogId == catalogoId) ? true : false);
-         var arrayServices = new java.util.ArrayList();
-     
-         if(validaProductCatalogId){
-     
-           log.info(LOG_HEADER + "Cantidad de servicios: " + services.size());
-     
-           //var containedServices = new java.util.ArrayList();
-     
-             for(var i=0; i<services.size(); i++) {
-     
-                    var mapServices = new java.util.HashMap();
-                    
-                    mapServices.put("catalogItemID", services.get(i).get("catalogItemID"));
-                    mapServices.put("catalogItemName", services.get(i).get("catalogItemName"));            
-     
-                     if(services.get(i).containsKey("containedServices")){
-     
-                        mapServices.put("containedServices", getProductsContainedServices(services.get(i)));
-                       
-                     }else{
-     
-                       mapServices.put("containedServices", null);
+      var totalPetition = new java.util.ArrayList();
+      var resultado = new java.util.ArrayList();
+   
+      try{
+            
+         totalPetition = completMap.get("datos").get("ImplCart").get("items");
+   
+         if(totalPetition != 'undefined'){
+
+            log.info(LOG_HEADER + "TOTAL DE ORDENES: " + totalPetition.size());                    
+            
+            //! RECORRER TODAS LAS PETICIONES U ORDENES
+            for(var i=0; i<totalPetition.size(); i++) {
+   
+               var mapOrdenes =  new java.util.HashMap();
+
+               //! START HARCODEO DE FAMILIAS
+               var mapFamily =  new java.util.HashMap();
+               mapFamily.put('3467202', 'EQ');
+               mapFamily.put('3419372', 'BA');
+               mapFamily.put('3472512', 'TV');
+               mapFamily.put('3482112', 'VOZ');
+               //! END HARCODEO DE FAMILIAS
+
+               var catalogId = totalPetition.get(i).get("productCatalogId");
+
+               var productName = mapFamily.get(catalogId);
+               var action = totalPetition.get(i).get("action");
+               //var productName = totalPetition.get(i).get("productName");
+               var productServiceId = totalPetition.get(i).get("productServiceId");
+
+               mapOrdenes.put("productCatalogId", catalogId);
+               mapOrdenes.put("action", action);
+               mapOrdenes.put("productName", productName);
+               mapOrdenes.put("productServiceId", productServiceId);
+   
+               log.info(LOG_HEADER + "ORDEN "+(i+1)+": " + catalogId+ " - "+action+" - "+productName+" - "+productServiceId);
+               
+               var iptv = validateActionAndProductCatalogId(catalogId, action, 'ADD_PRODUCT', '3472512');
+               var broadband = validateActionAndProductCatalogId(catalogId, action, 'ADD_PRODUCT', '3419372');
+               var toip = validateActionAndProductCatalogId(catalogId, action, 'ADD_PRODUCT', '3482112');
+               var aliasIptv = validateActionAndProductCatalogId(catalogId, action, 'ADD_PRODUCT', '3472512');
+               var validaAltaRepetidor = validateActionAndProductCatalogId(catalogId, action, 'ADD_PRODUCT', '3467202');
+               //aliasIptv = (aliasIptv ? totalPetition.get(i).get("productServiceId") : null);
+   
+               var arraysCabezeraItems = ["altaIPTV", "altaBroadband", "altaTOIP", "aliasIPTV"];
+               var arraysBodyItems = [iptv, broadband, toip, aliasIptv];
+   
+               //! START INYECTAR "PLAN CLOUD PVR" SOLO EN IPTV
+               if(iptv){
+                  mapOrdenes.put("PLAN CLOUD PVR", "1019")
+               }
+               //! END INYECTAR Cloud PVR SOLO EN IPTV
+
+
+               //var mapPetitionDetails = new java.util.HashMap();
+
+               //! RECORRE LAS CABEZERAS DE LAS ORDENES
+               
+               for(var index=0; index<arraysCabezeraItems.length; index++){
+                  
+                  mapOrdenes.put(arraysCabezeraItems[index], arraysBodyItems[index]);
+               }
+
+               log.info(LOG_HEADER + "mapOrdenes inicial: " + mapOrdenes);
+         
+               //! ******************** BEGIN CODE SERVICES ********************
+   
+               log.info(LOG_HEADER + "All services: " + totalPetition.get(i).get(("services")));
+
+               
+   
+               if (totalPetition.get(i).containsKey("services")) {
+
+                  var services = new java.util.ArrayList();                 
+
+                  services = totalPetition.get(i).get("services"); //! CADA UNO DE LOS SERVICIOS
+
+                  log.info(LOG_HEADER + "Servicios pasados a getServices(): " + services);
+
+                  /* 
+                     1. Servicios producto Broadband -> 3419372
+                     2. Servicios producto Equipment -> 3467202
+                     3. Servicios producto IPTV -> 3472512
+                     4. Servicios producto TOIP -> 3482112
+                  
+                  */
+                  var codeServices = ["3419372", "3467202", "3472512", "3482112"];
+
+                  //var mapPetitionDetails = new java.util.HashMap();
+
+                  //! RECORRE LAS CABEZERAS DE LAS ORDENES
+
+                  var arrayServices = new java.util.ArrayList();
+
+                  log.info(LOG_HEADER + "Cantidad de servicios: " + services.size());
+
+                  for(var index=0; index<codeServices.length; index++){
+
+                     log.info(LOG_HEADER + "Comparar si los valores son iguales: "+catalogId+" <-> "+codeServices[index]);
+
+                     if(catalogId == codeServices[index]){ //valida si hay productos broadband, equipamnt, etc
+
+                        log.info(LOG_HEADER + "SERVICIO "+(index+1)+": los valores son iguales¡");
+
+                        var servicios = obtenerServicios(services);
+                        log.info(LOG_HEADER + "servicios: "+servicios);
+
                      }
-                    
-                    arrayServices.add(mapServices);
+                     else{
+
+                        log.info(LOG_HEADER + "En el servicio "+(index+1)+" los valores no son iguales¡ ");
+
+                     }
+
+                     // log.info(LOG_HEADER + "Llenando array de servicios...");
+                     arrayServices = servicios;                                               
+                  }
+
+                  mapOrdenes.put("serviciosSolicitados", arrayServices);
+
+                  log.info(LOG_HEADER + "serviciosSolicitados incluidos en la orden: " + mapOrdenes);
+
+                  resultado.add(mapOrdenes);                     
+
+                  /*var serviciosProductosBroadband = getServices(services, catalogId, '3419372');
+                  var serviciosProductosEquipment = getServices(services, catalogId, '3467202');
+                  var serviciosProductosIPTV = getServices(services, catalogId, '3472512');
+                  var serviciosProductosTOIP = getServices(services, catalogId, '3482112');
+   
+                  mapOrdenes.put("serviciosSolicitados", serviciosProductosBroadband);
+                  mapOrdenes.put("serviciosSolicitados", serviciosProductosEquipment);
+                  mapOrdenes.put("serviciosSolicitados", serviciosProductosIPTV);
+                  mapOrdenes.put("serviciosSolicitados", serviciosProductosTOIP);
+                  
+                  
+                  log.info(LOG_HEADER + "PRIMERA PARTE SERVICIOS: " + mapOrdenes);*/
+                     
+                  //!!!!!!!!!!!!!!!!!!!!! BEGIN HIGH REPEATER                                         
+/*
+                  if(validaAltaRepetidor){
+
+                     var arrayContained = new java.util.ArrayList();
+                     var arrayAltaRepetidor = new java.util.ArrayList();
+   
+                     var servForAlta = getServices(services, catalogId, '3467202');
+   
+                     if (servForAlta.contains("productoServicio")) {
+
+                        var productoServicio =  servForAlta.get("productoServicio");
+
+                        for(var x=0; x<productoServicio.size(); x++) {
+
+                           var mapAltaRepetidor = new java.util.HashMap();
+
+                           if (productoServicio.get(x).get("ps") == '3469152') {
+                              
+                              mapAltaRepetidor.put("ps", productoServicio.get(x).get("catalogItemID")),
+                              mapAltaRepetidor.put("catalogItemName", productoServicio.get(x).get("catalogItemName"))
+                           }
+                           
+                           log.info(LOG_HEADER + "iteraciones Mapa alta repetidor: " + mapAltaRepetidor);
+
+                           arrayContained.add(mapAltaRepetidor); //! en caso de no encontrar alta se guarda asi: new java.util.ArrayList();                              
+   
+                        }
+
+                        arrayAltaRepetidor = arrayContained;                           
+                     } 
+
+                     log.info(LOG_HEADER + "array alta repetidor: " + arrayAltaRepetidor);
+                     mapOrdenes.put("altaRepetidor", arrayAltaRepetidor);
+
+                  }else{
+
+                     log.info(LOG_HEADER + "No existe alta repetidor");
+                  }
+   */
+                  //!!!!!!!!!!!!!!!!!!!!! END HIGH REPEATER
+                  
+                  
+               }else {
+   
+                  log.info(LOG_HEADER + "No existen servicios");
+               }
+
+                              
+   
+         }
+   
+         } else {
+            //items.put("Items", null);
+            log.info(LOG_HEADER + "No existen ordenes");
+   
+         }
+
+         //arrayResult.add(resultado);
+
+         //log.info(LOG_HEADER + "Resultado a devolver para la orden final: "+resultado);
+
+         //! ******************** END ALL ITEMS ********************
+
+      }catch(e){
+   
+         //items.put("Error", LOG_HEADER + "Error de excepcion en funcion getMapOrdersDetails(): " + e);
+         log.info(LOG_HEADER + "Error de excepcion en funcion getMapOrdersDetails(): " + e);
+      }
+   
+      log.info(LOG_HEADER + "arrayResult: " + resultado);
+   
+      return resultado;
+   }
+   
+   function validateActionAndProductCatalogId(productCatalogId, action, action_ref, productCatalogId_ref){
+   
+      //console.log("1111", productCatalogId_ref);
+      var result = ((action == action_ref && productCatalogId == productCatalogId_ref) ? true : false);
+   
+      return result;
+   }
+   
+   function obtenerServicios(services){
+      
+      var arregloServicios = new java.util.ArrayList(); 
+      var arregloContieneServicio = new java.util.ArrayList(); 
+
+      for(var i=0; i<services.size(); i++) { //! recorrer todos los servicios de la orden 1, 2, 3.... 
+
+         var mapaServicios = new java.util.HashMap();
+
+         mapaServicios.put("catalogItemID", services.get(i).get("catalogItemID"));
+         mapaServicios.put("catalogItemName", services.get(i).get("catalogItemName"));
+
+         if(services.get(i).containsKey("containedServices")){
+
+            log.info(LOG_HEADER + "Existen productos contenidos en el servicio ¡"+(i+1));
+
+            arregloContieneServicio = getProductsContainedServices(services.get(i)); //!  [{},{},{},{}]
+            mapaServicios.put("productoServicio", arregloContieneServicio);
+            
+         }
+
+
+         arregloServicios.add(mapaServicios);
+      }
+
+      log.info(LOG_HEADER + "Servicios de orden devueltos: " + arregloServicios);
+
+      return arregloServicios; // [{},{},{},{}]
+
+   }
+
+
+    /* function getServices(services){
      
-                 }
-             }
-     
-             log.info(LOG_HEADER + "array de servicios en la funcion getServices(): " + arrayServices);
+         var arrayServices = new java.util.ArrayList();
+         var arrayContainedServices = new java.util.ArrayList();    
+   
+         //var containedServices = new java.util.ArrayList();
+   
+         for(var i=0; i<services.size(); i++) {
+   
+            var mapServices = new java.util.HashMap();
+            
+            mapServices.put("catalogItemID", services.get(i).get("catalogItemID"));
+            mapServices.put("catalogItemName", services.get(i).get("catalogItemName"));            
+
+            if(services.get(i).containsKey("containedServices")){
+
+               arrayContainedServices = getProductsContainedServices(services.get(i));
+               mapServices.put("productoServicio", arrayContainedServices);
+               
+            }
+
+            arrayServices = mapServices;
+   
+         }
+
+         log.info(LOG_HEADER + "mapa de servicios en la funcion getServices(): " + arrayServices);                           
              
          return arrayServices;
-     }
+     }*/
      
      function getProductsContainedServices(services){ 
       
-         var arrayContainedServices = new java.util.ArrayList();
          var containedServices = new java.util.ArrayList();
+         var arrayContainedServices = new java.util.ArrayList();
      
          containedServices = services.get("containedServices"); 
-         
-     
+              
          for(var i=0; i<containedServices.size(); i++) {
      
            var mapContainedServices = new java.util.HashMap();
             
-           mapContainedServices.put("catalogItemID", containedServices.get(i).get("catalogItemID"));
+           mapContainedServices.put("ps", containedServices.get(i).get("catalogItemID"));
            mapContainedServices.put("catalogItemName", containedServices.get(i).get("catalogItemName"));
            
            arrayContainedServices.add(mapContainedServices);
         }
      
-        //log.info(LOG_HEADER + "array de servicios contenidos en la funcion getProductsContainedServices(): " + arrayContainedServices);
+        log.info(LOG_HEADER + "array de servicios contenidos en la funcion getProductsContainedServices(): " + arrayContainedServices);
         
         return arrayContainedServices;
      }
      
-     function getDataCompleted(){
-         
-         var obj = {
-             "estado":{
-                "codigoEstado":"200",
-                "glosaEstado":"OK"
-             },
-             "datos":{
-                "ImplCart":{
-                   "implImmediateChargeForOrderImpl":{
-                      
-                   },
-                   "items":[
-                      {
-                         "productCatalogId":"3419372",
-                         "productOfferingId":"4014361",
-                         "sharedProduct":false,
-                         "productServiceId":"1100469806",
-                         "productName":"Banda Ancha",
-                         "services":[
-                            {
-                               "previousRecurringPrice":{
-                                  "amount":0.00,
-                                  "taxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "immediatePriceX9":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "businessType":"REGULAR",
-                               "catalogItemID":"3419232",
-                               "recurringPrice":{
-                                  "proratedAmount":0.00,
-                                  "proratedDiscountAmount":0.00,
-                                  "proratedTaxAmount":0.00,
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "frequency":"MONTH",
-                                  "finalTaxAmount":0.00,
-                                  "originalTaxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "catalogItemName":"Acceso",
-                               "oneTimePrice":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "relationToParentID":"3465482",
-                               "action":"ADD",
-                               "id":"100469810",
-                               "serviceType":"GROUP",
-                               "status":"ACTIVE"
-                            },
-                            {
-                               "previousRecurringPrice":{
-                                  "amount":0.00,
-                                  "taxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "immediatePriceX9":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "businessType":"REGULAR",
-                               "catalogItemID":"3464732",
-                               "recurringPrice":{
-                                  "proratedAmount":0.00,
-                                  "proratedDiscountAmount":0.00,
-                                  "proratedTaxAmount":0.00,
-                                  "finalAmount":21000.00,
-                                  "originalAmount":24990.00,
-                                  "frequency":"MONTH",
-                                  "finalTaxAmount":3990.00,
-                                  "originalTaxAmount":3990.00,
-                                  "finalAmountWithTax":24990.00
-                               },
-                               "catalogItemName":"Planes Banda Ancha",
-                               "oneTimePrice":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "relationToParentID":"3465472",
-                               "action":"ADD",
-                               "id":"100469811",
-                               "serviceType":"GROUP",
-                               "status":"ACTIVE"
-                            },
-                            {
-                             "containedServices":[
-                                    {
-                                     "previousRecurringPrice":{
-                                        "amount":0.00,
-                                        "taxAmount":0.00,
-                                        "finalAmountWithTax":0.00
-                                     },
-                                     "immediatePriceX9":{
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "finalTaxAmount":0.00
-                                     },
-                                     "businessType":"PRUEBA",
-                                     "catalogItemID":"3469092",
-                                     "recurringPrice":{
-                                        "proratedAmount":0.00,
-                                        "proratedDiscountAmount":0.00,
-                                        "proratedTaxAmount":0.00,
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "frequency":"MONTH",
-                                        "finalTaxAmount":0.00,
-                                        "originalTaxAmount":0.00,
-                                        "finalAmountWithTax":0.00
-                                     },
-                                     "catalogItemName":"Ejemplo de la data",
-                                     "oneTimePrice":{
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "finalTaxAmount":0.00
-                                     },
-                                     "relationToParentID":"3469952",
-                                     "action":"ADD",
-                                     "id":"100470029",
-                                     "serviceType":"SERVICE",
-                                     "status":"ACTIVE"
-                                  }
-                               ],
-                               "previousRecurringPrice":{
-                                  "amount":0.00,
-                                  "taxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "immediatePriceX9":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "businessType":"REGULAR",
-                               "catalogItemID":"3421212",
-                               "recurringPrice":{
-                                  "proratedAmount":0.00,
-                                  "proratedDiscountAmount":0.00,
-                                  "proratedTaxAmount":0.00,
-                                  "finalAmount":832.00,
-                                  "originalAmount":990.00,
-                                  "frequency":"MONTH",
-                                  "finalTaxAmount":158.00,
-                                  "originalTaxAmount":158.00,
-                                  "finalAmountWithTax":990.00
-                               },
-                               "catalogItemName":"Servicios Adicionales Banda Ancha",
-                               "pricePackages":[
-                                  {
-                                     "previousRecurringPrice":{
-                                        "amount":0.00,
-                                        "taxAmount":0.00,
-                                        "finalAmountWithTax":0.00
-                                     },
-                                     "immediatePriceX9":{
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "finalTaxAmount":0.00
-                                     },
-                                     "catalogItemID":"4100991",
-                                     "recurringPrice":{
-                                        "proratedAmount":0.00,
-                                        "proratedDiscountAmount":0.00,
-                                        "proratedTaxAmount":0.00,
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "frequency":"MONTH",
-                                        "finalTaxAmount":0.00,
-                                        "originalTaxAmount":0.00,
-                                        "finalAmountWithTax":0.00
-                                     },
-                                     "catalogItemName":"Conexion Segura",
-                                     "oneTimePrice":{
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "finalTaxAmount":0.00
-                                     },
-                                     "isAllowedForSelfService":"Y",
-                                     "action":"ADD",
-                                     "id":"100469814"
-                                  },
-                                  {
-                                     "previousRecurringPrice":{
-                                        "amount":0.00,
-                                        "taxAmount":0.00,
-                                        "finalAmountWithTax":0.00
-                                     },
-                                     "immediatePriceX9":{
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "finalTaxAmount":0.00
-                                     },
-                                     "catalogItemID":"5924773",
-                                     "recurringPrice":{
-                                        "proratedAmount":0.00,
-                                        "proratedDiscountAmount":0.00,
-                                        "proratedTaxAmount":0.00,
-                                        "finalAmount":832.00,
-                                        "originalAmount":990.00,
-                                        "frequency":"MONTH",
-                                        "finalTaxAmount":158.00,
-                                        "originalTaxAmount":158.00,
-                                        "finalAmountWithTax":990.00
-                                     },
-                                     "catalogItemName":"Conexion Segura Hogar",
-                                     "oneTimePrice":{
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "finalTaxAmount":0.00
-                                     },
-                                     "isAllowedForSelfService":"Y",
-                                     "action":"ADD",
-                                     "id":"100469815"
-                                  }
-                               ],
-                               "oneTimePrice":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "relationToParentID":"4016591",
-                               "action":"ADD",
-                               "id":"100469813",
-                               "serviceType":"GROUP",
-                               "status":"ACTIVE"
-                            },
-                            {
-                               "previousRecurringPrice":{
-                                  "amount":0.00,
-                                  "taxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "immediatePriceX9":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "businessType":"REGULAR",
-                               "catalogItemID":"3400009",
-                               "recurringPrice":{
-                                  "proratedAmount":0.00,
-                                  "proratedDiscountAmount":0.00,
-                                  "proratedTaxAmount":0.00,
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "frequency":"MONTH",
-                                  "finalTaxAmount":0.00,
-                                  "originalTaxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "catalogItemName":"Beneficios de Producto Cruzado",
-                               "oneTimePrice":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "relationToParentID":"4016551",
-                               "action":"ADD",
-                               "id":"100469816",
-                               "serviceType":"GROUP",
-                               "status":"ACTIVE"
-                            }
-                         ],
-                         "immediatePriceX9":{
-                            "finalAmount":0.00,
-                            "originalAmount":0.00,
-                            "finalTaxAmount":0.00,
-                            "currency":"CLP"
-                         },
-                         "installationAddressID":"2358",
-                         "productId":"100469806",
-                         "lob":"WL",
-                         "recurringPrice":{
-                            "proratedAmount":0.00,
-                            "proratedDiscountAmount":0.00,
-                            "proratedTaxAmount":0.00,
-                            "finalAmount":17632.00,
-                            "originalAmount":21832.00,
-                            "frequency":"MONTH",
-                            "finalTaxAmount":3350.00,
-                            "originalTaxAmount":3350.00,
-                            "finalAmountWithTax":20982.00
-                         },
-                         "oneTimePrice":{
-                            "finalAmount":0.00,
-                            "originalAmount":0.00,
-                            "finalTaxAmount":0.00,
-                            "currency":"CLP"
-                         },
-                         "productTypeX9":"NOT_GLP",
-                         "equipment":false,
-                         "pricePackagesX9":[
-                            {
-                               "previousRecurringPrice":{
-                                  "amount":0.00,
-                                  "taxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "immediatePriceX9":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "catalogItemID":"3968551",
-                               "recurringPrice":{
-                                  "proratedAmount":0.00,
-                                  "proratedDiscountAmount":0.00,
-                                  "proratedTaxAmount":0.00,
-                                  "finalAmount":-4200.00,
-                                  "originalAmount":-4998.00,
-                                  "frequency":"MONTH",
-                                  "finalTaxAmount":-798.00,
-                                  "originalTaxAmount":-798.00,
-                                  "finalAmountWithTax":-4998.00
-                               },
-                               "catalogItemName":"Descuento 20% x 6 meses BA 600",
-                               "oneTimePrice":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "isAllowedForSelfService":"Y",
-                               "action":"ADD",
-                               "id":"100470028"
-                            },
-                            {
-                               "previousRecurringPrice":{
-                                  "amount":0.00,
-                                  "taxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "immediatePriceX9":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "catalogItemID":"3466372",
-                               "recurringPrice":{
-                                  "proratedAmount":0.00,
-                                  "proratedDiscountAmount":0.00,
-                                  "proratedTaxAmount":0.00,
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "frequency":"MONTH",
-                                  "finalTaxAmount":0.00,
-                                  "originalTaxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "catalogItemName":"Plan Técnico de Precios",
-                               "oneTimePrice":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "action":"ADD",
-                               "id":"100469817"
-                            }
-                         ],
-                         "action":"ADD_PRODUCT",
-                         "id":"232437"
-                      },
-                      {
-                         "productCatalogId":"3467202",
-                         "productOfferingId":"4014361",
-                         "sharedProduct":false,
-                         "productServiceId":"1100469808",
-                         "productName":"Equipment Main",
-                         "services":[
-                            {
-                             "containedServices":[
-                                  {
-                                     "previousRecurringPrice":{
-                                        "amount":0.00,
-                                        "taxAmount":0.00,
-                                        "finalAmountWithTax":0.00
-                                     },
-                                     "immediatePriceX9":{
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "finalTaxAmount":0.00
-                                     },
-                                     "businessType":"PRUEBA",
-                                     "catalogItemID":"3469092",
-                                     "recurringPrice":{
-                                        "proratedAmount":0.00,
-                                        "proratedDiscountAmount":0.00,
-                                        "proratedTaxAmount":0.00,
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "frequency":"MONTH",
-                                        "finalTaxAmount":0.00,
-                                        "originalTaxAmount":0.00,
-                                        "finalAmountWithTax":0.00
-                                     },
-                                     "catalogItemName":"Moden Fibra y ONT Prueba",
-                                     "oneTimePrice":{
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "finalTaxAmount":0.00
-                                     },
-                                     "relationToParentID":"3469952",
-                                     "action":"ADD",
-                                     "id":"100470029",
-                                     "serviceType":"SERVICE",
-                                     "status":"ACTIVE"
-                                  }
-                               ],
-     
-                               "previousRecurringPrice":{
-                                  "amount":0.00,
-                                  "taxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "immediatePriceX9":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "businessType":"REGULAR",
-                               "catalogItemID":"3419232",
-                               "recurringPrice":{
-                                  "proratedAmount":0.00,
-                                  "proratedDiscountAmount":0.00,
-                                  "proratedTaxAmount":0.00,
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "frequency":"MONTH",
-                                  "finalTaxAmount":0.00,
-                                  "originalTaxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "catalogItemName":"Acceso",
-                               "oneTimePrice":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "relationToParentID":"3469912",
-                               "action":"ADD",
-                               "id":"100469820",
-                               "serviceType":"GROUP",
-                               "status":"ACTIVE"
-                            },
-                            {
-                               "previousRecurringPrice":{
-                                  "amount":0.00,
-                                  "taxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "immediatePriceX9":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "businessType":"REGULAR",
-                               "catalogItemID":"3467312",
-                               "recurringPrice":{
-                                  "proratedAmount":0.00,
-                                  "proratedDiscountAmount":0.00,
-                                  "proratedTaxAmount":0.00,
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "frequency":"MONTH",
-                                  "finalTaxAmount":0.00,
-                                  "originalTaxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "catalogItemName":"Modem",
-                               "containedServices":[
-                                  {
-                                     "previousRecurringPrice":{
-                                        "amount":0.00,
-                                        "taxAmount":0.00,
-                                        "finalAmountWithTax":0.00
-                                     },
-                                     "immediatePriceX9":{
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "finalTaxAmount":0.00
-                                     },
-                                     "businessType":"REGULAR",
-                                     "catalogItemID":"3469092",
-                                     "recurringPrice":{
-                                        "proratedAmount":0.00,
-                                        "proratedDiscountAmount":0.00,
-                                        "proratedTaxAmount":0.00,
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "frequency":"MONTH",
-                                        "finalTaxAmount":0.00,
-                                        "originalTaxAmount":0.00,
-                                        "finalAmountWithTax":0.00
-                                     },
-                                     "catalogItemName":"Moden Fibra y ONT",
-                                     "oneTimePrice":{
-                                        "finalAmount":0.00,
-                                        "originalAmount":0.00,
-                                        "finalTaxAmount":0.00
-                                     },
-                                     "relationToParentID":"3469952",
-                                     "action":"ADD",
-                                     "id":"100470029",
-                                     "serviceType":"SERVICE",
-                                     "status":"ACTIVE"
-                                  }
-                               ],
-                               "oneTimePrice":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "relationToParentID":"3469902",
-                               "action":"ADD",
-                               "id":"100469821",
-                               "serviceType":"GROUP",
-                               "status":"ACTIVE"
-                            }
-                         ],
-                         "immediatePriceX9":{
-                            "finalAmount":0.00,
-                            "originalAmount":0.00,
-                            "finalTaxAmount":0.00,
-                            "currency":"CLP"
-                         },
-                         "installationAddressID":"2358",
-                         "productId":"100469808",
-                         "lob":"WL",
-                         "recurringPrice":{
-                            "proratedAmount":0.00,
-                            "proratedDiscountAmount":0.00,
-                            "proratedTaxAmount":0.00,
-                            "finalAmount":0.00,
-                            "originalAmount":0.00,
-                            "frequency":"MONTH",
-                            "finalTaxAmount":0.00,
-                            "originalTaxAmount":0.00,
-                            "finalAmountWithTax":0.00
-                         },
-                         "oneTimePrice":{
-                            "finalAmount":0.00,
-                            "originalAmount":0.00,
-                            "finalTaxAmount":0.00,
-                            "currency":"CLP"
-                         },
-                         "productTypeX9":"NOT_GLP",
-                         "equipment":false,
-                         "pricePackagesX9":[
-                            {
-                               "previousRecurringPrice":{
-                                  "amount":0.00,
-                                  "taxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "immediatePriceX9":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "catalogItemID":"3470102",
-                               "recurringPrice":{
-                                  "proratedAmount":0.00,
-                                  "proratedDiscountAmount":0.00,
-                                  "proratedTaxAmount":0.00,
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "frequency":"MONTH",
-                                  "finalTaxAmount":0.00,
-                                  "originalTaxAmount":0.00,
-                                  "finalAmountWithTax":0.00
-                               },
-                               "catalogItemName":"Plan técnico de precios de equipos",
-                               "oneTimePrice":{
-                                  "finalAmount":0.00,
-                                  "originalAmount":0.00,
-                                  "finalTaxAmount":0.00
-                               },
-                               "action":"ADD",
-                               "id":"100469822"
-                            }
-                         ],
-                         "action":"ADD_PRODUCT",
-                         "id":"232438"
-                      }
-                   ],
-                   "previousRecurringPrice":{
-                      "amount":0.00,
-                      "taxAmount":0.00,
-                      "finalAmountWithTax":0.00
-                   },
-                   "immediatePriceX9":{
-                      "finalAmount":0.00,
-                      "originalAmount":0.00,
-                      "finalTaxAmount":0.00
-                   },
-                   "originatingSalesChannel":"CEC",
-                   "recurringPrice":{
-                      "proratedAmount":0.00,
-                      "proratedDiscountAmount":0.00,
-                      "proratedTaxAmount":0.00,
-                      "finalAmount":17632.00,
-                      "originalAmount":21832.00,
-                      "frequency":"MONTH",
-                      "finalTaxAmount":3350.00,
-                      "originalTaxAmount":3350.00,
-                      "finalAmountWithTax":20982.00
-                   },
-                   "oneTimePrice":{
-                      "finalAmount":0.00,
-                      "originalAmount":0.00,
-                      "finalTaxAmount":0.00
-                   },
-                   "currentSalesChannel":"CEC",
-                   "currency":"CLP",
-                   "id":"232436A"
-                }
-             }
-          };
-         
-         return obj;
-     }
-     
+     /*
      function backEndCall() {
      
         var cacheTimeout = 1800;
@@ -954,25 +495,48 @@
         log.info(LOG_HEADER + "Respuesta dsaResponse en la funcion backEndCall(): "+dsaResponse);
      
         return dsaResponse;
-     }
+     }*/
+
+     function backEndCall() {
+
+      var headers = new java.util.HashMap();
+      var cacheTimeout = 1800;
+      var mcsForceExecution = false;  
+      var response;
+      
+      //var calendar = new java.util.GregorianCalendar();
+      //cart/379437687A?lo=es_CL&sc=SS&locale=es_CL&salesChannel=SS&time=1544583600000&ci=156377317
+  
+      var functionName = 'cart';
+      var cacheKey = "";
+      var httpMethod = "GET";
+      var dsaRef="LISTADO_ORDEN_AMDOCS";
+      var restAddress = "cart/"+referenceNumber+"?lo=es_CL&sc=SS&locale=es_CL&salesChannel=SS&time=1544583600000&ci="+customerId+"";
+   
+      log.info(LOG_HEADER + "restAddress: https://apix.movistar.cl/MCSS-Common/"+restAddress);
+  
+      var requestBody = '';
+
+      headers.put("Authorization", "Bearer "+ tokenAxway);    
+      headers.put("AuthorizationMCSS", tokenAmdocs);
+  
+      log.info(LOG_HEADER + "headers: "+headers);
+  
      
-     
-     var LOG_HEADER = "Believe.getOrdersDetail ->"; 
-     log.info(LOG_HEADER + "START");
-     log.info(LOG_HEADER + "Parametros recibidos: referenceNumber: "+referenceNumber+" - customerId: "+customerId+" - creationDate: " +creationDate+" - tokenAmdocs: "+tokenAmdocs);
-     
-     
-     var completMap = new java.util.HashMap();
-     var headers = new java.util.HashMap();
-     
-     var httpMethod = "GET";
-     var dsaRef="DETALLE_ORDEN_AMDOCS";  //! HACE REFERENCIA A LA API DEFINIDA EN LOS DSAs DE LA CONSOLA (ENVIROMENT->DSA CONNECTIONS)
-     var restAddress = "cart/"+referenceNumber+"?ci="+customerId+"&lo=es_CL&sc=SS&time="+creationDate+"&locale=es_CL&salesChannel=SS";
-     var requestBody = '';
-    
-     headers.put("authorization", tokenAmdocs);
-     
-    
-     var salida = processData(); 
-     
-     return salida;
+      var dsaResponse = Utility.callBlockingCache(functionName, cacheKey, function(){
+                  
+          try{
+              response = Generic_REST_Connector.executeREST(restAddress, requestBody, headers,httpMethod, dsaRef);
+              log.info(LOG_HEADER +"response backEndCall(): " + response);
+          }catch(e){
+              log.info(LOG_HEADER +" exception on REST call: " +  e);
+          }
+          
+          return response;
+  
+      }, cacheTimeout, mcsForceExecution, "getOrdersList");         
+              
+      log.info(LOG_HEADER + "Respuesta dsaResponse backEndCall(): "+dsaResponse);
+  
+      return dsaResponse;
+  }
